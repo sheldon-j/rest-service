@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper">
+	
+	<select id="getMemberInfoByID" parameterType="String" resultType="com.jpark.restful.dto.MemberDTO">
+		SELECT * 
+		FROM j_member
+		WHERE member_grade > 0
+		AND member_id = #{member_id}
+	</select>
+	
+	<insert id="insertAccount" parameterType="HashMap">
+		INSERT INTO j_member
+		(
+			member_id, member_name, member_pw, member_grade, regdate
+		) VALUES (
+			#{member_id}, #{member_name}, #{member_pw}, 1, getdate()
+		)
+	</insert>
+	
+	<select id="getExistCountByID" parameterType="String" resultType="Integer">
+		SELECT COUNT(*) as cnt
+		FROM j_member
+		WHERE member_grade > 0
+		AND member_id = #{member_id}
+	</select>
+	
+	<select id="getTotalSize" resultType="Integer">
+		SELECT COUNT(*) AS CNT
+		FROM j_board
+	</select>
+	
+	<select id="getBoardList" resultType="com.jpark.restful.dto.BoardDTO">
+		SELECT * FROM ( 
+			SELECT row_number() over(order by regdate desc) as rownum, * FROM j_board
+		) AS z
+		WHERE 1=1
+		AND z.rownum between #{startNum} and #{endNum}
+		ORDER BY z.regdate desc
+	</select>
+	
+	<select id="getBoardInfoByID" parameterType="String" resultType="com.jpark.restful.dto.BoardDTO">
+		SELECT * FROM j_board WHERE idx = #{idx}
+	</select>
+	
+	<insert id="addBoard">
+		INSERT INTO j_board
+		(
+			`member_id`,
+			`board_type`,
+			`title`,
+			`contents`,
+			`hit`,
+			`regdate`,
+			`updatetime`
+		) VALUES (
+			#{member_id},
+			#{board_type},
+			#{title},
+			#{contents},
+			0,
+			getdate(),
+			getdate()
+		)
+	</insert>
+	
+	<update id="updateBoard" parameterType="com.jpark.restful.dto.BoardDTO">
+		UPDATE j_board
+		SET `board_type` = #{board_type},
+			`title` = #{title},
+			`contents` = #{contents},
+			`updatetime` = #{updatetime}
+		WHERE `idx` = #{idx}
+	</update>
+	
+	<delete id="deleteBoard" parameterType="com.jpark.restful.dto.BoardDTO">
+		DELETE FROM j_board
+		WHERE idx = #{idx}
+		AND member_id = #{member_id}
+	</delete>
+	
+</mapper>
